@@ -12,7 +12,7 @@ has 'app';
 
 sub init {
   my ($self, $app, $conf) = @_;
-  my $path = $app->isa('Mojolicious::Lite') ? $FindBin::Bin : "$FindBin::Bin/..";
+  my $path = $app->home;
   my $conf_dir = $conf->{conf_dir};
   $self->mod_dir($conf->{mod_dir});
   $self->app($app);
@@ -23,6 +23,7 @@ sub init {
   close $fh;
   
   $self->add($_) for @{ $app_conf->{modules} };
+  
   $app->helper(module => sub { $self });
 }
 
@@ -31,14 +32,17 @@ sub add {
   croak "Trying to reload module \"$name\"!\n" if exists $self->modules->{$name};
   return $self->modules->{$name} = $module if $module;
   
-  my $dir = $self->app->isa('Mojolicious::Lite') ? $FindBin::Bin : "$FindBin::Bin/..";
+  my $dir = $self->app->home;
   my $path = decamelize $name;
   $path =~ s/-/\//;
   $path = $dir.'/'.$self->mod_dir.'/'.$path;
   
   @::INC = ("$path/lib", @::INC);
   load $name;
-  $name->new->init($self->app, $path);
+  
+  my $mod = $name->new;
+  $mod->init($self->app, $path);
+  $self->modules->{$name} = $mod;
 }
 
 sub get {

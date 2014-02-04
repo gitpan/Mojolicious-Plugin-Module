@@ -1,7 +1,8 @@
 package Mojolicious::Plugin::Module;
 use Mojo::Base 'Mojolicious::Plugin';
 use Mojolicious::Plugin::Module::Manager;
-our $VERSION = "0.01";
+use Mojolicious::Plugin::Module::Assets;
+our $VERSION = "0.02";
 
 sub register {
   my ($self, $app, $conf) = @_;
@@ -11,6 +12,7 @@ sub register {
   $conf->{mod_dir}  = 'mod'  unless exists $conf->{mod_dir};
   
   Mojolicious::Plugin::Module::Manager->new->init($app, $conf);
+  Mojolicious::Plugin::Module::Assets->new->init($app);
 }
 
 1;
@@ -46,6 +48,7 @@ directories.
 
 =head2 Structure of module
 
+  assets                                  # Module's public files.
   conf                                    # Some configs.
     module.conf                           # Main config of this module.
   lib
@@ -78,7 +81,7 @@ Get module by C<$name>.
 =head1 SEE ALSO
 
 L<Mojolicious::Plugin::Module::Abstract>, L<Mojolicious::Plugin::Module::Manager>,
-L<Mojolicious::Guides>, L<http://mojolicio.us>.
+L<Mojolicious::Plugin::Module::Assets>, L<Mojolicious::Guides>, L<http://mojolicio.us>.
 
 =head1 COPYRIGHT AND LICENSE
 
