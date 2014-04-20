@@ -1,7 +1,7 @@
 package Mojolicious::Plugin::Module::Manager;
 use Mojo::Base -base;
 use Mojo::Util qw/camelize decamelize/;
-use Mojo::JSON 'j';
+use YAML;
 use Carp 'croak';
 use Module::Load;
 use FindBin;
@@ -17,9 +17,10 @@ sub init {
   $self->mod_dir($conf->{mod_dir});
   $self->app($app);
   
-  open(my $fh, "$path/$conf_dir/app.conf") or croak "Can't find '$path/$conf_dir/app.conf'";
+  open(my $fh, "$path/$conf_dir/application.yaml") or
+    croak "Can't find '$path/$conf_dir/application.yaml'";
   local $/;
-  my $app_conf = j (<$fh>);
+  my ($app_conf) = Load(<$fh>);
   close $fh;
   
   $self->add($_) for @{ $app_conf->{modules} };
@@ -76,7 +77,7 @@ Mojolicious application.
 
 =item $conf
 
-Keys: C<conf_dir> - directory with C<app.conf>, C<mod_dir> - directory with modules.
+Keys: C<conf_dir> - directory with C<application.yaml>, C<mod_dir> - directory with modules.
 
 =back
 

@@ -1,7 +1,7 @@
 package Mojolicious::Plugin::Module::Abstract;
 use Mojo::Base -base;
 use Mojo::Util 'decamelize';
-use Mojo::JSON 'j';
+use YAML;
 use Hash::Merge::Simple qw/merge/;
 
 has 'routes';
@@ -39,18 +39,19 @@ sub init_config {
   $pkg =~ s/-/\//;
   my $fh;
   
-  open($fh, "./conf/$pkg.conf") and do {
+  open($fh, "./config/$pkg.yaml") and do {
     local $/;
-    $self->config(j<$fh>);
+    my ($data) = Load(<$fh>);
+    $self->config($data);
     close $fh;
   };
   $self->config({ %{$self->config}, path => $path });
   
-  open($fh, $self->config->{path}.'/conf/module.conf') and do {
+  open($fh, $self->config->{path}.'/config/module.yaml') and do {
     local $/;
-    my $config = j<$fh>;
+    my ($data) = Load(<$fh>);
     close $fh;
-    $self->config(merge $config, $self->config);
+    $self->config(merge $data, $self->config);
   };
 }
 
@@ -101,8 +102,8 @@ Current mojolicious application object.
 
 =head3 init_config($self, $app, $path)
 
-Looks for C<./conf/module.conf> config in JSON format an load it. Also trying to load local
-config for this module from application C<conf/vendor/module_name.conf>(JSON too). Configs will
+Looks for C<./config/module.conf> config in YAML format an load it. Also trying to load local
+config for this module from application C<config/vendor/module_name.yaml>(YAML too). Configs will
 be merged.
 
 You can get module's config this way:
